@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FarmAI – Agricultural Assistant</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-dark:  #1b5e3b;
+      --green:       #2d6a4f;
+      --green-mid:   #40916c;
+      --green-light: #74c69d;
+      --green-pale:  #d8f3dc;
+      --cream:       #f6f8f3;
+      --white:       #ffffff;
+      --gray-100:    #f1f3ee;
+      --gray-200:    #e2e6de;
+      --gray-400:    #a3ae9b;
+      --gray-600:    #68756a;
+      --gray-800:    #2a3028;
+      --red:         #c0392b;
+      --red-pale:    #fdf0ee;
+      --amber:       #856404;
+      --amber-pale:  #fff3cd;
+      --blue:        #084298;
+      --blue-pale:   #cfe2ff;
+      --radius:      10px;
+      --radius-sm:   6px;
+      --shadow:      0 2px 10px rgba(0,0,0,0.09);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--cream);
+      color: var(--gray-800);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 230px;
+      min-height: 100vh;
+      background: var(--green-dark);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      z-index: 100;
+    }
+
+    .sidebar-brand {
+      padding: 1.4rem 1.25rem 1.1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .sidebar-brand h1 { color: #fff; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.2px; }
+    .sidebar-brand p  { color: rgba(255,255,255,0.5); font-size: 0.7rem; margin-top: 0.2rem; }
+
+    .sidebar-nav { padding: 0.6rem 0; flex: 1; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.62rem 1.25rem;
+      color: rgba(255,255,255,0.65);
+      cursor: pointer; font-size: 0.87rem; font-weight: 500;
+      border-left: 3px solid transparent;
+      transition: all 0.13s; user-select: none;
+    }
+    .nav-item:hover  { background: rgba(255,255,255,0.08); color: #fff; }
+    .nav-item.active { background: rgba(255,255,255,0.13); color: #fff; border-left-color: var(--green-light); }
+    .nav-icon { font-size: 0.95rem; width: 18px; text-align: center; }
+
+    /* ── Main ── */
+    .main { margin-left: 230px; flex: 1; display: flex; flex-direction: column; }
+
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0.8rem 2rem;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-title { font-size: 0.98rem; font-weight: 600; }
+
+    .content { padding: 1.75rem 2rem; flex: 1; }
+
+    /* ── Sections ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── Home ── */
+    .hero {
+      background: linear-gradient(130deg, var(--green-dark) 0%, var(--green-mid) 100%);
+      border-radius: var(--radius);
+      padding: 2.25rem 2rem;
+      color: #fff;
+      margin-bottom: 1.75rem;
+    }
+    .hero h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.45rem; }
+    .hero p  { opacity: 0.78; font-size: 0.88rem; line-height: 1.65; max-width: 480px; }
+
+    .feature-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.25rem;
+    }
+    .feature-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      cursor: pointer;
+      transition: all 0.14s;
+    }
+    .feature-card:hover { border-color: var(--green-mid); box-shadow: var(--shadow); transform: translateY(-2px); }
+    .feature-icon    { font-size: 1.8rem; margin-bottom: 0.65rem; }
+    .feature-card h3 { font-size: 0.93rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .feature-card p  { font-size: 0.79rem; color: var(--gray-600); line-height: 1.55; }
+    .feature-go      { margin-top: 0.85rem; font-size: 0.78rem; color: var(--green); font-weight: 600; }
+
+    /* ── Forms ── */
+    .form-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 1.6rem;
+      max-width: 580px;
+    }
+    .form-card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 1.15rem; color: var(--green-dark); }
+
+    .field { margin-bottom: 1rem; }
+    .field label {
+      display: block;
+      font-size: 0.76rem; font-weight: 700; color: var(--gray-600);
+      margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
+      padding: 0.52rem 0.8rem; font-size: 0.9rem; font-family: inherit;
+      background: var(--white); color: var(--gray-800); transition: border-color 0.13s;
+    }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none; border-color: var(--green-mid);
+      box-shadow: 0 0 0 3px rgba(64,145,108,0.13);
+    }
+    .field textarea { resize: vertical; min-height: 90px; }
+
+    .submit-btn {
+      background: var(--green); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      padding: 0.62rem 1.5rem; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;
+      transition: background 0.13s;
+    }
+    .submit-btn:hover:not(:disabled) { background: var(--green-mid); }
+    .submit-btn:disabled { background: var(--gray-400); cursor: not-allowed; }
+
+    /* ── Result card ── */
+    .result-card {
+      margin-top: 1.25rem;
+      background: var(--white); border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius); overflow: hidden;
+      display: none; max-width: 580px;
+    }
+    .result-card.show { display: block; }
+
+    .result-header {
+      padding: 0.7rem 1.2rem; background: var(--green-pale);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .result-label { font-size: 0.8rem; font-weight: 700; color: var(--green-dark); }
+    .result-tools { font-size: 0.71rem; color: var(--gray-600); }
+
+    .result-body {
+      padding: 1.15rem 1.2rem;
+      font-size: 0.86rem; line-height: 1.72;
+      white-space: pre-wrap; color: var(--gray-800);
+    }
+
+    .result-card.err .result-header { background: var(--red-pale); }
+    .result-card.err .result-label  { color: var(--red); }
+    .result-card.err .result-body   { color: var(--red); }
+
+    /* ── History ── */
+    .history-empty { text-align: center; padding: 3rem 1rem; color: var(--gray-400); }
+    .history-empty .big-icon { font-size: 2.5rem; margin-bottom: 0.65rem; }
+    .history-empty p { font-size: 0.84rem; }
+
+    .history-list { display: flex; flex-direction: column; gap: 0.85rem; max-width: 700px; }
+
+    .history-item {
+      background: var(--white); border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .history-head {
+      padding: 0.72rem 1.15rem; display: flex; align-items: center; gap: 0.7rem;
+      cursor: pointer; user-select: none;
+    }
+    .history-head:hover { background: var(--gray-100); }
+
+    .badge {
+      font-size: 0.67rem; font-weight: 700;
+      padding: 0.18rem 0.55rem; border-radius: 99px;
+      text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0;
+    }
+    .badge-pest   { background: var(--amber-pale); color: var(--amber); }
+    .badge-scheme { background: var(--blue-pale);  color: var(--blue); }
+
+    .history-title { font-size: 0.85rem; font-weight: 600; flex: 1; }
+    .history-time  { font-size: 0.71rem; color: var(--gray-400); }
+
+    .history-body {
+      display: none; padding: 1rem 1.15rem;
+      font-size: 0.82rem; line-height: 1.68; white-space: pre-wrap;
+      color: var(--gray-600); border-top: 1px solid var(--gray-200);
+    }
+    .history-body.open { display: block; }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin 0.65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ── */
+    @media (max-width: 680px) {
+      .sidebar { width: 190px; }
+      .main    { margin-left: 190px; }
+      .content { padding: 1.25rem; }
+      .topbar  { padding: 0.72rem 1.25rem; }
+    }
+    @media (max-width: 480px) {
+      .sidebar { display: none; }
+      .main    { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <h1>FarmAI</h1>
+    <p>Agricultural Assistant</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" data-sec="home">
+      <span class="nav-icon">🏠</span> Home
+    </div>
+    <div class="nav-item" data-sec="pest">
+      <span class="nav-icon">🐛</span> Pest Analysis
+    </div>
+    <div class="nav-item" data-sec="scheme">
+      <span class="nav-icon">📋</span> Scheme Finder
+    </div>
+    <div class="nav-item" data-sec="history">
+      <span class="nav-icon">🕑</span> History
+    </div>
+  </nav>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="topbarTitle">Home</span>
+  </div>
+
+  <div class="content">
+
+    <!-- HOME -->
+    <div class="section active" id="sec-home">
+      <div class="hero">
+        <h2>Welcome to FarmAI</h2>
+        <p>
+          Your AI-powered agricultural assistant. Identify pests affecting your crops
+          and discover government schemes you're eligible for — all in seconds.
+        </p>
+      </div>
+      <div class="feature-cards">
+        <div class="feature-card" onclick="go('pest')">
+          <div class="feature-icon">🐛</div>
+          <h3>Pest Analysis</h3>
+          <p>Describe the symptoms you see on your crop. FarmAI identifies the pest
+             and gives you a practical, step-by-step treatment plan.</p>
+          <div class="feature-go">Analyze now →</div>
+        </div>
+        <div class="feature-card" onclick="go('scheme')">
+          <div class="feature-icon">📋</div>
+          <h3>Scheme Finder</h3>
+          <p>Tell us your state, crop, and farm size. FarmAI lists government schemes
+             and subsidies you can apply for right now.</p>
+          <div class="feature-go">Find schemes →</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PEST ANALYSIS -->
+    <div class="section" id="sec-pest">
+      <div class="form-card">
+        <h2>🐛 Pest Analysis</h2>
+        <div class="field">
+          <label>Crop</label>
+          <input id="p-crop" type="text" placeholder="e.g. tomato, wheat, rice, cotton" />
+        </div>
+        <div class="field">
+          <label>Symptoms</label>
+          <textarea id="p-symptoms"
+            placeholder="Describe what you see — yellowing leaves, holes, dark spots, wilting, white patches…"></textarea>
+        </div>
+        <button class="submit-btn" id="p-btn" onclick="analyzePest()">Analyze</button>
+      </div>
+
+      <div class="result-card" id="p-card">
+        <div class="result-header">
+          <span class="result-label">Analysis Result</span>
+          <span class="result-tools" id="p-tools"></span>
+        </div>
+        <div class="result-body" id="p-body"></div>
+      </div>
+    </div>
+
+    <!-- SCHEME FINDER -->
+    <div class="section" id="sec-scheme">
+      <div class="form-card">
+        <h2>📋 Scheme Finder</h2>
+        <div class="field">
+          <label>State</label>
+          <input id="s-state" type="text" placeholder="e.g. Punjab, Maharashtra, Uttar Pradesh" />
+        </div>
+        <div class="field">
+          <label>Crop</label>
+          <input id="s-crop" type="text" placeholder="e.g. wheat, cotton, rice, sugarcane" />
+        </div>
+        <div class="field">
+          <label>Farm Category</label>
+          <select id="s-cat">
+            <option value="marginal">Marginal — less than 1 hectare</option>
+            <option value="small" selected>Small — 1 to 2 hectares</option>
+            <option value="large">Large — more than 2 hectares</option>
+          </select>
+        </div>
+        <button class="submit-btn" id="s-btn" onclick="findSchemes()">Find Schemes</button>
+      </div>
+
+      <div class="result-card" id="s-card">
+        <div class="result-header">
+          <span class="result-label">Recommended Schemes</span>
+          <span class="result-tools" id="s-tools"></span>
+        </div>
+        <div class="result-body" id="s-body"></div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="section" id="sec-history">
+      <div class="history-empty" id="hist-empty">
+        <div class="big-icon">🕑</div>
+        <p>No queries yet. Run a pest analysis or scheme search to build your history.</p>
+      </div>
+      <div class="history-list" id="hist-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const BASE = window.location.origin;
+  let histData = [];
+
+  const TITLES = { home:'Home', pest:'Pest Analysis', scheme:'Scheme Finder', history:'History' };
+
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.addEventListener('click', () => go(el.dataset.sec));
+  });
+
+  function go(sec) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('sec-' + sec).classList.add('active');
+    document.querySelector(`.nav-item[data-sec="${sec}"]`).classList.add('active');
+    document.getElementById('topbarTitle').textContent = TITLES[sec] || '';
+  }
+
+  function setLoading(id, loading, label) {
+    const btn = document.getElementById(id);
+    btn.disabled = loading;
+    btn.innerHTML = loading ? '<div class="spinner"></div> Working…' : label;
+  }
+
+  function showResult(cardId, bodyId, toolsId, text, tools, isErr) {
+    const card = document.getElementById(cardId);
+    card.className = 'result-card show' + (isErr ? ' err' : '');
+    document.getElementById(bodyId).textContent = text;
+    document.getElementById(toolsId).textContent =
+      tools && tools.length ? 'Tool: ' + tools.join(', ') : '';
+  }
+
+  function addHistory(type, title, body) {
+    const ts = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    histData.unshift({ type, title, body, ts });
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const empty = document.getElementById('hist-empty');
+    const list  = document.getElementById('hist-list');
+    if (!histData.length) { empty.style.display = 'block'; list.innerHTML = ''; return; }
+    empty.style.display = 'none';
+    list.innerHTML = histData.map((h, i) => `
+      <div class="history-item">
+        <div class="history-head" onclick="toggleHist(${i})">
+          <span class="badge ${h.type === 'pest' ? 'badge-pest' : 'badge-scheme'}">
+            ${h.type === 'pest' ? 'Pest' : 'Scheme'}
+          </span>
+          <span class="history-title">${h.title}</span>
+          <span class="history-time">${h.ts}</span>
+        </div>
+        <div class="history-body" id="hb-${i}">${h.body}</div>
+      </div>
+    `).join('');
+  }
+
+  function toggleHist(i) {
+    document.getElementById('hb-' + i).classList.toggle('open');
+  }
+
+  async function analyzePest() {
+    const crop     = document.getElementById('p-crop').value.trim();
+    const symptoms = document.getElementById('p-symptoms').value.trim();
+    if (!crop)     { alert('Please enter the crop name.'); return; }
+    if (!symptoms) { alert('Please describe the symptoms.'); return; }
+
+    setLoading('p-btn', true, 'Analyze');
+    try {
+      const res  = await fetch(`${BASE}/pest-analysis`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ crop, symptoms }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Request failed');
+      showResult('p-card', 'p-body', 'p-tools', data.analysis, data.tools_invoked, false);
+      addHistory('pest', `${crop} — ${symptoms.slice(0, 55)}`, data.analysis);
+    } catch (e) {
+      showResult('p-card', 'p-body', 'p-tools', e.message, [], true);
+    } finally {
+      setLoading('p-btn', false, 'Analyze');
+    }
+  }
+
+  async function findSchemes() {
+    const state    = document.getElementById('s-state').value.trim();
+    const crop     = document.getElementById('s-crop').value.trim();
+    const category = document.getElementById('s-cat').value;
+    if (!state) { alert('Please enter your state.'); return; }
+    if (!crop)  { alert('Please enter the crop name.'); return; }
+
+    setLoading('s-btn', true, 'Find Schemes');
+    try {
+      const res  = await fetch(`${BASE}/scheme-recommendation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state, crop, category }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Request failed');
+      showResult('s-card', 's-body', 's-tools', data.schemes, data.tools_invoked, false);
+      addHistory('scheme', `${state} / ${crop} (${category})`, data.schemes);
+    } catch (e) {
+      showResult('s-card', 's-body', 's-tools', e.message, [], true);
+    } finally {
+      setLoading('s-btn', false, 'Find Schemes');
+    }
+  }
+
+  renderHistory();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: farm-ai
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: LANGCHAIN_TRACING_V2
+        value: "true"
+      - key: LANGCHAIN_PROJECT
+        value: farm-ai
+      - key: LANGCHAIN_ENDPOINT
+        value: https://api.smith.langchain.com
+      - key: LANGCHAIN_API_KEY
+        sync: false          # set manually in Render dashboard
+      - key: GROQ_API_KEY
+        sync: false          # set manually in Render dashboard
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile

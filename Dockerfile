@@ -11,4 +11,4 @@ COPY . .
 EXPOSE 8000
 
 # Uvicorn with 2 workers; adjust --workers based on your instance CPU
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["gunicorn", "main:app", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]

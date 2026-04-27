@@ -18,3 +18,5 @@ services:
         sync: false          # set manually in Render dashboard
       - key: GROQ_MODEL
         value: llama-3.3-70b-versatile
+      - key: PYTHON_VERSION
+        value: "3.11.0"

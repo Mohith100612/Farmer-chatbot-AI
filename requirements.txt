@@ -1,9 +1,9 @@
 fastapi==0.115.5
 uvicorn[standard]==0.32.1
 gunicorn==23.0.0
-langchain>=0.3.7
-langchain-groq>=0.2.3
-langchain-core>=0.3.29
-langsmith>=0.1.147
-pydantic==2.10.3
+langchain==0.3.7
+langchain-groq==0.2.3
+langchain-core==0.3.29
+langsmith==0.1.147
+pydantic==2.7.4
 python-dotenv==1.0.1
